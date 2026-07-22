@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<title>RAMAM HOME</title>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAfvx1cigRlVDlMKT4dTNp8AF2_a9yfkvE",
+    authDomain: "ramam-85e12.firebaseapp.com",
+    projectId: "ramam-85e12",
+    storageBucket: "ramam-85e12.firebasestorage.app",
+    messagingSenderId: "202427188819",
+    appId: "1:202427188819:web:edb78eacf649487f8f68a6",
+    measurementId: "G-X1KQ8QM55T"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  let currentUserId = null;
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUserId = user.uid;
+      enableAddButtons(true);
+    } else {
+      currentUserId = null;
+      enableAddButtons(false);
+      alert("يجب تسجيل الدخول لإضافة منتجات للسلة.");
+    }
+  });
+
+  function enableAddButtons(enable) {
+    document.querySelectorAll(".addToCartBtn").forEach(btn => {
+      btn.disabled = !enable;
+    });
+  }
+
+  async function addToCart(product) {
+  if (!currentUserId) {
+    alert("يرجى تسجيل الدخول أولاً.");
+    return;
+  }
+
+  // نضيف معرف المستخدم للمنتج
+  const productWithUser = {...product, userId: currentUserId, timestamp: new Date().toISOString()};
+
+  // نجلب السلة الحالية من localStorage أو نهيئها
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  // نضيف المنتج الجديد للسلة
+  cart.push(productWithUser);
+
+  // نحفظ السلة المحدثة في localStorage
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  alert("✅ تمت الإضافة إلى السلة");
+}
+
+  
+  // زيادة أو نقصان الكمية في كل منتج
+  function changeQuantity(productIndex, delta) {
+  // بدلاً من البحث بالـ id الثابت، نجيب العنصر من الزر نفسه
+  const productCard = event.target.closest('.product-card');
+  const qtyElem = productCard.querySelector('span[id^="qty-"]');
+
+  let currentQty = parseInt(qtyElem.textContent);
+  currentQty += delta;
+  if (currentQty < 1) currentQty = 1;
+  qtyElem.textContent = currentQty;
+}
+
+
+  window.addToCart = addToCart;
+  window.changeQuantity = changeQuantity;
+</script>
+<style>
+  /* إعدادات أساسية */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #cdbc87;
+  color: #3b3a30;
+  padding: 15px 10px;
+  min-height: 100vh;
+}
+
+h1 {
+  text-align: center;
+  font-weight: 700;
+  font-size: 4.2rem;
+  margin-bottom: 25px;
+  color: #6c8126;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+/* حاوية المنتجات */
+.products-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* كارت المنتج */
+.product-card {
+  background-color: #6c812644;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(68, 102, 51, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  flex: 1 1 calc(50% - 15px); /* كل كارت ياخد نصف العرض تقريبًا */
+  max-width: calc(50% - 15px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(68, 102, 51, 0.4);
+}
+
+h3 {
+  margin: 0 0 15px;
+  font-size: 2.4rem;
+  color: #fbfbfa;
+}
+
+.image-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 160px;
+  margin-bottom: 8px;
+}
+
+.image-wrapper img {
+  width: 200%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(51, 85, 34, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.image-wrapper:hover img {
+  transform: scale(1.05);
+}
+
+.eye-icon, .heart-btn {
+  position: absolute;
+  top: 6px;
+  width: 72px;
+  height: 72px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0,0,0,0.15);
+  transition: background 0.3s ease;
+  padding: 10;
+  z-index: 10;
+}
+
+.eye-icon { left: 6px; }
+.heart-btn { left: 44px; }
+
+.eye-icon svg, .heart-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.color-thumbnails {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.color-thumbnails img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(51,85,34,0.25);
+  transition: transform 0.3s ease;
+}
+
+.color-thumbnails img:hover { transform: scale(1.15); }
+
+p {
+  font-size: 2.2rem;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+  color: #6c8126;
+}
+
+.quantity-control button {
+  width: 32px;
+  height: 32px;
+  font-size: 1.3rem;
+}
+
+.quantity-control span {
+  font-size: 1.2rem;
+  min-width: 28px;
+  display: inline-block;
+  text-align: center;
+}
+
+button.addToCartBtn {
+  width: 100%;
+  padding: 14px 0;
+  border: none;
+  margin-top: 20px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #6c8126, #b0b078);
+  color: #fff;
+  font-size: 2.15rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 5px 10px rgba(80, 106, 14, 0.6);
+  transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.2s ease;
+}
+
+button.addToCartBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6c8126, #b0b078);
+  box-shadow: 0 8px 15px rgba(80, 106, 14, 0.6);
+  transform: translateY(-2px);
+}
+
+/* رابط الذهاب للسلة */
+a {
+  display: block;
+  max-width: 380px;
+  margin: 20px auto 0 auto;
+  text-align: center;
+  text-decoration: none;
+  font-size: 1.2rem;
+  color: #6c8126;
+  font-weight: 700;
+  padding: 12px 0;
+  border-radius: 30px;
+  background: #d9e2ca;
+  box-shadow: 0 4px 8px rgba(86,113,52,0.3);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+a:hover {
+  background: #a0b078;
+  color: #fff;
+}
+
+/* Responsive للموبايل */
+@media (max-width: 600px) {
+  .products-container { gap: 15px; }
+  .product-card { flex: 1 1 calc(50% - 15px); max-width: calc(50% - 15px); padding: 18px; }
+  h1 { font-size: 2rem; }
+  h3 { font-size: 1.5rem; }
+  p { font-size: 1.3rem; }
+  .quantity-control button { width: 40px; height: 40px; font-size: 1.5rem; }
+  .quantity-control span { font-size: 1.4rem; min-width: 35px; }
+  button.addToCartBtn { font-size: 1.3rem; padding: 14px 0; }
+  .eye-icon, .heart-btn { width: 36px; height: 36px; }
+  .eye-icon svg, .heart-btn svg { width: 22px; height: 22px; }
+  .color-thumbnails img { width: 42px; height: 42px; }
+  a { max-width: 95vw; font-size: 1.25rem; padding: 14px 0; }
+}
+/* تنسيق أزرار زيادة/نقص الكمية */
+.quantity-control button {
+  background-color: #6c8126; /* أخضر زيتي */
+  color: #fff;               /* النص أبيض */
+  border: none;
+  border-radius: 8px;
+  width: 40px;               /* تكبير الزر */
+  height: 40px;
+  font-size: 1.5rem;         /* تكبير رقم الزر */
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.quantity-control button:hover {
+  background-color: #a0b078; /* تغيير لون عند المرور */
+  transform: translateY(-2px);
+}
+
+/* النص داخل الكمية */
+.quantity-control span {
+  font-size: 1.8rem;
+  min-width: 35px;
+  display: inline-block;
+  text-align: center;
+  font-weight: bold;
+}
+/* تكبير الصورة الرئيسية داخل الكارت وجعلها في المنتصف */
+.image-wrapper {
+  display: flex;
+  justify-content: center; /* توسيط الصورة أفقياً */
+  align-items: center;     /* توسيط الصورة عمودياً */
+  width: 100%;
+  max-width: 1620px;        /* تكبير الصورة الرئيسية */
+  margin: 0 auto 12px auto; /* مسافة أسفل الصورة */
+}
+
+.image-wrapper img {
+  width: 100%;
+  height: auto;
+  max-width: 1240px;        /* تكبير الصورة */
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(51, 85, 34, 0.3);
+  transition: transform 0.3s ease;
+}
+
+/* تكبير الصور المصغرة (الألوان) وتحريكهم للمنتصف */
+.color-thumbnails {
+  display: flex;
+  justify-content: center; /* توسيط الصور المصغرة */
+  gap: 8px;                /* مسافة أكبر بين الصور المصغرة */
+  margin-top: 6px;         /* زيادة المسافة من الصورة الرئيسية */
+}
+
+.color-thumbnails img {
+  width: 122px;              /* تكبير الصور المصغرة */
+  height: 122px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(51, 85, 34, 0.25);
+  transition: transform 0.3s ease;
+}
+
+.color-thumbnails img:hover {
+  transform: scale(1.2);    /* تأثير أكبر عند المرور */
+}
+/* تنظيم الصور المصغرة داخل الكارت */
+.color-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 صور في كل صف */
+  gap: 6px; /* مسافة بين الصور */
+  justify-items: center; /* توسيط الصور داخل الأعمدة */
+  margin-top: 6px;
+}
+
+.color-thumbnails img {
+  width: 122px;  /* تكبير الصور المصغرة */
+  height: 122px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(51, 85, 34, 0.25);
+  transition: transform 0.3s ease;
+}
+
+.color-thumbnails img:hover {
+  transform: scale(1.2);
+}
+/* ضبط الكارت ليكون كل شيء داخله عمودي */
+
+/* أي عنصر تريد أن يكون في أسفل الكارت */
+.quantity-control,
+.addToCartBtn {
+  margin-top: auto; /* يجعلهم دائمًا في الأسفل */
+  width: 100%;
+}
+.quantity-control {
+  display: flex;
+  justify-content: center; /* توسيط الأزرار أفقيًا */
+  align-items: center;
+  gap: 10px; /* مسافة بين أزرار + الرقم */
+  margin-top: auto; /* تبقى دائمًا في أسفل الكارت */
+  width: auto; /* نخليها بحجم محتواها فقط */
+}
+
+.eye-icon, .heart-btn {
+  position: absolute;
+  top: 12px; /* رفع الرموز قليلاً من أعلى الصورة */
+  width: 50px;   /* تكبير الحجم */
+  height: 50px;
+  background: rgba(255,255,255,0.9); /* خلفية شبه شفافة */
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0); /* ظل خفيف */
+  transition: transform 0.3s ease, background 0.3s ease;
+  z-index: 10;
+}
+
+.eye-icon {
+  left: 12px; /* مسافة من اليسار */
+}
+
+.heart-btn {
+  right: 12px; /* وضع القلب على اليمين */
+}
+
+.eye-icon:hover, .heart-btn:hover {
+  transform: scale(1.2); /* تكبير عند المرور بالماوس */
+  background: rgba(255,255,255,1);
+}
+
+/* حجم الرموز svg داخل الأزرار */
+.eye-icon svg, .heart-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* لو تحبي تكبير أكبر للهواتف */
+@media (max-width: 600px) {
+  .eye-icon, .heart-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .eye-icon svg, .heart-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+.eye-icon, .heart-btn {
+  position: absolute;
+  top: 12px; /* مسافة من أعلى الصورة */
+  width: 70px;   /* حجم الزر */
+  height: 70px;
+  color: #fff;
+  background: #cdbc87; /* خلفية شبه شفافة */
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0);
+  transition: transform 0.3s ease, background 0.3s ease;
+  z-index: 10;
+}
+
+/* وضعهم جنب بعض على اليسار */
+.eye-icon {
+  left: 12px;
+ font-size: 40px;
+
+}
+
+.heart-btn {
+  left: 192px; /* على يمين العين مباشرة */
+  right: 265px;
+  font-size: 40px;
+   border: none;       /* إزالة أي إطار */
+  outline: none;   
+}
+
+/* تكبير عند المرور */
+.eye-icon:hover, .heart-btn:hover {
+  transform: scale(1.3);
+  background: rgba(255, 255, 255, 0.144);
+}
+
+/* حجم الرموز svg داخل الأزرار */
+.eye-icon svg, .heart-btn svg {
+  width: 136px;
+  height: 136px;
+}
+
+/* تحسين للهواتف */
+@media (max-width: 600px) {
+  .eye-icon, .heart-btn {
+    width: 60px;
+    height: 60px;
+  }
+
+  .heart-btn { left: 80px; }
+
+  .eye-icon svg, .heart-btn svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+
+.image-wrapper img {
+  width: 450px;
+  height: 300px;
+  object-fit: cover; /* علشان الصورة تتقص وتكون كلها نفس المقاس */
+}
+</style>
+</head>
+<body>
+<h1>  KITCHEN TOOLS </h1>
+
+<!-- مربع البحث -->
+<div class="search-container">
+  <input type="text" id="searchInput" placeholder="Search for a product...">
+</div>
+<div class="products-container">
+   <!--1 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_1.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_1.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_2.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_3.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3> طقم جيرانيت</h3>
+    <p>طقم جيرانيت تيتانيوم 12 قطعه</p>
+    <p style="color: #fff;">11999.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:' طقم جيرانيت', price:11999.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_1.jpg'})">Add to cart </button>
+  </div>
+
+
+
+  
+ <!--2 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_4.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_4.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_5.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3>  طقم تيتانيوم جيرانيت </h3>
+    <p>طقم تيتانيوم جيرانيت جيجيلي 10 قطع </p>
+    <p style="color: #fff;">14900.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم تيتانيوم جيرانيت ',price:14900.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_4.jpg'})"> Add to cart</button>
+  </div> <!--3 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_6.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_6.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_7.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3>طقم تيتانيوم جيرانيت </h3>
+    <p>طقم تيتانيوم جيرانيت جيجيلي 12 قطعه .</p>
+    <p style="color: #fff;">16400.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم تيتانيوم جيرانيت', price:16400.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_6.jpg'})"> Add to cart</button>
+  </div> <!--4 كارت منتج -->
+  <div class="product-card">
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_8.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_8.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_9.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_10.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_11.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3> طقم استيل تركي </h3>
+    <p>طقم استيل تركي لينز 10 قطع حله كبيره مقاس 32 </p>
+    <p style="color: #fff;">6500.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم استيل تركي', price:6500.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_8.jpg'})"> Add to cart</button>
+  </div> <!--5 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_12.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_12.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_13.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_14.jpg" alt="لون 3" title="لون 3">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_15.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_16.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_17.jpg" alt="لون 3" title="لون 3">
+    
+    </div>
+    <h3> طقم جيرانيت لينز  </h3>
+    <p> طقم جيرانيت لينز 11 قطعه حله كبيره مقاس 30 </p>
+    <p style="color: #fff;">7999.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم جيرانيت لينز ', price:7999.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_12.jpg'})"> Add to cart</button>
+  </div> <!--6 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_79.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_79.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_80.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_81.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3>  طقم تيفال تيتانيوم  </h3>
+    <p> طقم تيفال تيتانيوم  </p>
+    <p style="color: #fff;">10499.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم تيفال تيتانيوم ', price:10499.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_79.jpg'})"> Add to cart</button>
+  </div> <!--7 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_18.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_18.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_19.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3> حله ضغط</h3>
+    <p>حله ضغط 12 لتر تركي </p>
+    <p style="color: #fff;">4800.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'حله ضغط', price:4800.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_18.jpg'})"> Add to cart</button>
+  </div> <!--8 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_20.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_20.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_21.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_22.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3> طقم نيوفلام</h3>
+    <p>طقم نيوفلام 11 قطعه كورى اصلي  </p>
+    <p style="color: #fff;">13500.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم نيوفلام', price:13500.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_20.jpg'})"> Add to cart</button>
+  </div> <!--9 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_23.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_23.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_24.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_25.jpg" alt="لون 3" title="لون 3">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_26.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_27.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_28.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3> طقم مقالي جيرانيت</h3>
+    <p>طقم مقالي جيرانيت تيتانيوم 2 مقلاه </p>
+    <p style="color: #fff;">1900.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم مقالي جيرانيت', price:1900.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_23.jpg'})"> Add to cart</button>
+  </div> <!--10 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_29.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_29.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_30.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_31.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3> طقم طاجن جيرانيت  </h3>
+    <p>طقم طاجن جيرانيت تيتانيوم مكون من 2 طاجن </p>
+    <p style="color: #fff;">2450.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم طاجن جيرانيت ', price:2450.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_29.jpg'})"> Add to cart</button>
+  </div> <!--11 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_32.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_32.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_33.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3> طقم جيريل </h3>
+    <p>طقم جيريل ضبل جيرانيت تيتانيوم مقاس 36</p>
+    <p style="color: #fff;">2250.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم جيريل ', price:2250.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_32.jpg'})"> Add to cart</button>
+  </div> <!--12 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_34.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_34.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_35.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_36.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3> صينيه تيتانيوم جيرانيت </h3>
+    <p>صينيه تيتانيوم جيرانيت بيتزا كبيره </p>
+    <p style="color: #fff;">1450.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'صينيه تيتانيوم جيرانيت ', price:1450.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_34.jpg'})"> Add to cart</button>
+  </div> <!--13 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_37.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_37.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_38.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_39.jpg" alt="لون 3" title="لون 3">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_40.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3> طقم صوانى فرن </h3>
+    <p>طقم صواني فرن تيتانيوم جيرانيت  2 صينيه </p>
+    <p style="color: #fff;">3200.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم صوانى فرن ', price:3200.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_37.jpg'})"> Add to cart</button>
+  </div> <!--14 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_41.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_41.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_42.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_43.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3> طقم مقلايه كريب </h3>
+    <p>طقم مقلايه كريب جيرانيت تيتانيوم</p>
+    <p style="color: #fff;">1350.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم مقلايه كريب ', price:1350.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_41.jpg'})"> Add to cart</button>
+  </div> <!--15 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_44.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_44.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_45.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3> طقم صواني فرن </h3>
+    <p>طقم صواني فرن المونيوم ب غطاء خام </p>
+    <p style="color: #fff;">1350.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم صواني فرن ', price:1350.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_44.jpg'})"> Add to cart</button>
+  </div> <!--16 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_46.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_46.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_47.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_48.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3> طقم صواني </h3>
+    <p>طقم صواني بسبوسه 3 قطع المونيوم خام </p>
+    <p style="color: #fff;"> 1250.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم صواني ', price:1250.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_46.jpg'})"> Add to cart</button>
+  </div> <!--17 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_49.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_49.jpg" alt="لون 1" title="لون 1">
+    </div>
+    <h3> طقم طاجن</h3>
+    <p>طقم طاجن المونيوم 3 قطع خام </p>
+    <p style="color: #fff;"> 1290.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم طاجن', price:1290.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_49.jpg'})"> Add to cart</button>
+  </div>
+ <!--18 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_50.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_50.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_51.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3> طقم توزيع  </h3>
+    <p> طقم توزيع ب السكاكين معاه القطاعه مكون من 4 قطع توزيع 1 ساطور 3 سكينه بالحامل</p>
+    <p style="color: #fff;">1900.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم توزيع ', price:1900.00 , image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_50.jpg'})"> Add to cart</button>
+  </div>
+   <!--19 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_52.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_52.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_53.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3> معلقه ايس كريم </h3>
+    <p> معلقه ايس كريم استانلس تقيله </p>
+    <p style="color: #fff;">185.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'معلقه ايس كريم ', price:185.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_52.jpg'})"> Add to cart</button>
+  </div> <!--20 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_54.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_54.jpg" alt="لون 1" title="لون 1">
+    </div>
+    <h3> هراسه توم </h3>
+    <p>هراسه توم استيل تقيله </p>
+    <p style="color: #fff;">185.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'هراسه توم ', price:185.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_54.jpg'})"> Add to cart</button>
+  </div> <!--21 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_55.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_55.jpg" alt="لون 1" title="لون 1">
+    </div>
+    <h3> شاكوش بوفتيك </h3>
+    <p> شاكوش بوفتيك استيل تقيل </p>
+    <p style="color: #fff;">210.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'شاكوش بوفتيك ', price:210.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_55.jpg'})"> Add to cart</button>
+  </div> <!--22 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_56.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_56.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_57.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3>   قشاره ومقوار </h3>
+    <p>قشاره ومقوار 2 في 1  استيل تقيل </p>
+    <p style="color: #fff;">185.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'قشاره ومقوار ', price:185.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_56.jpg'})"> Add to cart</button>
+  </div> <!--23 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_58.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_58.jpg" alt="لون 1" title="لون 1">
+    </div>
+    <h3> فتاحه استيل </h3>
+    <p>مجموعه فتاحه استيل تقيل 4 قطع</p>
+    <p style="color: #fff;">699.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'فتاحه استيل ', price:699.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_58.jpg'})"> Add to cart</button>
+  </div> <!--24 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_60.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_60.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_59.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3>نشابه </h3>
+    <p>نشابه عجن جيرانيت</p>
+    <p style="color: #fff;">190.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'نشابه ', price:190.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_60.jpg'})"> Add to cart</button>
+  </div> <!--25 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_61.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_61.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_62.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3>  مبشره استيل</h3>
+    <p> مبشره استيل ضد الصدأ </p>
+    <p style="color: #fff;">185.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:' مبشره استيل', price:185.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_61.jpg'})"> Add to cart</button>
+  </div> <!--26 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_63.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_63.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_64.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3>طقم حله </h3>
+    <p> طقم حله اندومي بيركس  </p>
+    <p style="color: #fff;"> 350.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم حله ', price:350.00 , image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_63.jpg'})">Add to cart </button>
+  </div> <!--27 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_65.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_65.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_66.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3>  صفايه بطاطس</h3>
+    <p>صفايه بطاطس وبانيه من الزيت ب الصينيه</p>
+    <p style="color: #fff;">290.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'صفايه بطاطس', price:290.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_65.jpg'})"> Add to cart</button>
+  </div> <!--28 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_67.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_67.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_68.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3> مكبس البرجر</h3>
+    <p>مكبس البرجر مقاس كبير </p>
+    <p style="color: #fff;"> 155.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'مكبس البرجر', price:155.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_67.jpg'})">Add to cart </button>
+  </div> <!--29 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_69.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_69.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_70.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3> مضرب بيض يدوى </h3>
+    <p>مضرب بيض يدوى استيل </p>
+    <p style="color: #fff;"> 75.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'مضرب بيض يدوى ', price:75.00 , image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_69.jpg'})"> Add to cart</button>
+  </div> <!--30 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_71.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_71.jpg" alt="لون 1" title="لون 1">
+    </div>
+    <h3>  مضرب بيض يدوى</h3>
+    <p> مضرب بيض يدوى سيلكون</p>
+    <p style="color: #fff;">80.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:' مضرب بيض يدوى', price:80.00 , image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_71.jpg'})"> Add to cart</button>
+  </div> <!--31 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_72.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_72.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_73.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3>  طقم فرش سيليكون</h3>
+    <p>طقم فرش سيليكون </p>
+    <p style="color: #fff;">255.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'طقم فرش سيليكون', price:255.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_72.jpg'})"> Add to cart</button>
+  </div> <!--32 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_74.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_74.jpg" alt="لون 2" title="لون 2">
+    </div>
+    <h3>  طقم معيار</h3>
+    <p>طقم معيار 8 قطع </p>
+    <p style="color: #fff;"> 95.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:' طقم معيار', price:95.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_74.jpg'})"> Add to cart</button>
+  </div> <!--33 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_75.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_75.jpg" alt="لون 1" title="لون 1">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_76.jpg" alt="لون 2" title="لون 2">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_77.jpg" alt="لون 3" title="لون 3">
+    </div>
+    <h3>  هون استيل </h3>
+    <p>هون استيل تقيل جدا</p>
+    <p style="color: #fff;">450.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'هون استيل ', price:450.00 , image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_75.jpg'})"> Add to cart</button>
+  </div> <!--34 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_78.jpg" alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+      <img src="assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_78.jpg" alt="لون 1" title="لون 1">
+    </div>
+    <h3>  شياطه تيفال</h3>
+    <p>شياطه تيفال</p>
+    <p style="color: #fff;">45.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:' شياطه تيفال', price:45.00, image:'assets/img/kitchen/WhatsApp Image 2025-07-30 at 14.48.13_829860ea_78.jpg'})"> Add to cart</button>
+  </div> <!--35 كارت منتج -->
+  <div class="product-card">
+    
+    <div class="image-wrapper">
+      <img src="assets/img/drinking/WhatsApp Image 2025-08-01 at 17.07.03_f62ae1b7_44.jpg"  alt="منتج 1">
+      <div class="eye-icon" title="تكبير الصورة">
+👁      </div>
+
+      <button class="heart-btn" title="أضف إلى المفضلة" aria-label="أضف إلى المفضلة">
+♡  </button>
+    </div>
+    <div class="color-thumbnails">
+     <img src="assets/img/drinking/WhatsApp Image 2025-08-01 at 17.07.03_f62ae1b7_44.jpg" onclick="changeImage(this)">
+        <img src="assets/img/drinking/WhatsApp Image 2025-08-01 at 17.07.03_f62ae1b7_45.jpg" onclick="changeImage(this)">
+        <img src="assets/img/drinking/WhatsApp Image 2025-08-01 at 17.07.03_f62ae1b7_46.jpg" onclick="changeImage(this)">
+        <img src="assets/img/drinking/WhatsApp Image 2025-08-01 at 17.07.03_f62ae1b7_47.jpg" onclick="changeImage(this)">
+        <img src="assets/img/drinking/WhatsApp Image 2025-08-01 at 17.07.03_f62ae1b7_48.jpg" onclick="changeImage(this)">
+        <img src="assets/img/drinking/WhatsApp Image 2025-08-01 at 17.07.03_f62ae1b7_49.jpg" onclick="changeImage(this)">
+
+    </div>
+    <h3>  حافظ طعام </h3>
+    <p>حافظ طعام 3دور خشبي </p>
+    <p style="color: #fff;">1250.00 EGP</p>
+
+    <div class="quantity-control">
+      <button onclick="changeQuantity(0, -1)">-</button>
+      <span id="qty-0" style="color: #fff;">1</span>
+      <button onclick="changeQuantity(0, 1)">+</button>
+    </div>
+
+    <button class="addToCartBtn" onclick="addToCart({name:'حافظ طعام ', price:1250.00, image:'assets/img/drinking/WhatsApp Image 2025-08-01 at 17.07.03_f62ae1b7_44.jpg'})"> Add to cart</button>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.heart-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('active');
+    // هنا يمكنك إضافة كود لإضافة/حذف المنتج من المفضلة
+  });
+});
+
+</script>
+<script>
+  // نختار كل الصور المصغرة في الصفحة
+  document.querySelectorAll('.color-thumbnails img').forEach(thumbnail => {
+    thumbnail.addEventListener('click', () => {
+      // نحدد العنصر الأب اللي يحتوي الصورة الكبيرة وصورة العين والقلب (image-wrapper)
+      const imageWrapper = thumbnail.closest('.product-card').querySelector('.image-wrapper');
+      // نختار الصورة الكبيرة داخل image-wrapper
+      const mainImage = imageWrapper.querySelector('img');
+      // نغير src للصورة الكبيرة الى src الصورة المصغرة اللي اضغطنا عليها
+      mainImage.src = thumbnail.src;
+      // لو عندك alt تريد تغييره كذلك، تضيف هنا mainImage.alt = thumbnail.alt;
+    });
+  });
+
+  // تكبير الصورة عند الضغط على رمز العين
+  document.querySelectorAll('.eye-icon').forEach(eye => {
+    eye.addEventListener('click', () => {
+      const imageWrapper = eye.closest('.product-card').querySelector('.image-wrapper');
+      const mainImage = imageWrapper.querySelector('img');
+      // نفتح الصورة الكبيرة في نافذة جديدة بحجمها الكامل
+      window.open(mainImage.src, '_blank');
+    });
+  });
+</script>
+<!-- أيقونة السلة أسفل يسار الشاشة -->
+<div class="floating-cart" onclick="goToCart()">
+  🛒
+  <span id="cartCountBadge" class="cart-badge">0</span>
+</div>
+
+
+<style>
+  .floating-cart {
+    position: fixed;
+    bottom: 65px;
+    left: 20px;
+  
+    background-color: #6c8126; /* زيتي */
+    color: #fff;
+    border-radius: 50%;
+    padding: 6px 8px;
+    font-size: 84px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+  }
+
+  .floating-cart:hover {
+    transform: scale(1.1);
+  }
+
+  .cart-badge {
+    position: absolute;
+    top: -24px;
+    right: -8px;
+    background: #cdbc87; /* بيج */
+    color: #6c8126;      /* زيتي */
+    font-size: 44px;
+    width: 52px;
+    height: 52px;
+    line-height: 52px;
+    border-radius: 50%;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+</style>
+<style>
+/* تنسيق مربع البحث */
+.search-container {
+  width: 100%; /* خليه ياخد عرض الصفحة كله */
+  max-width: 1200px; /* أقصى عرض */
+  margin: 0 auto 24px auto; /* وسط الصفحة */
+  text-align: center;
+  padding: 10px;
+  background-color: transparent;
+}
+
+#searchInput {
+  width: 95%;
+  height: 80px; /* ارتفاع كبير */
+  padding: 10px 15px;
+  font-size: 33px; /* تكبير النص */
+  border: 3px solid rgba(108, 129, 38, 0.8); /* زيتي شفاف أغمق شويه */
+  border-radius: 10px;
+  outline: none;
+  background-color: rgba(108, 129, 38, 0.15); /* خلفية زيتي شفافة خفيفة */
+  color: white; /* النص باللون الأبيض */
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(108, 129, 38, 0.4);
+}
+
+#searchInput::placeholder {
+  color: #6c8126cc;
+  font-size: 33px; /* تكبير كلمة البحث */
+  opacity: 0.85;
+}
+
+#searchInput:focus {
+  box-shadow: 0 0 15px rgba(108, 129, 38, 0.8), 0 0 25px rgba(108, 129, 38, 0.5);
+  transform: scale(1.04);
+}
+
+/* حركة عند المرور */
+#searchInput:hover {
+  box-shadow: 0 0 12px rgba(108, 129, 38, 0.7);
+  transform: scale(1.03);
+}
+
+/* تحسين عرض الموبايل */
+@media (max-width: 600px) {
+  #searchInput {
+    font-size: 20px;
+    height: 50px;
+  }
+}
+</style>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const input = document.getElementById('searchInput');
+  const cards = Array.from(document.querySelectorAll('.products-container .product-card'));
+
+  function filterProducts() {
+    const term = (input.value || '').trim().toLowerCase();
+
+    cards.forEach(card => {
+      // ناخد اسم المنتج من <h3> إن وجد، وإلا ناخد كل نص الكارت
+      const nameEl = card.querySelector('h3');
+      const text = (nameEl ? nameEl.textContent : card.textContent).toLowerCase();
+
+      // نظهر/نخفي حسب التطابق
+      card.style.display = text.includes(term) ? '' : 'none';
+    });
+  }
+
+  // شغّل البحث أثناء الكتابة
+  input.addEventListener('input', filterProducts);
+});
+</script>
+<script>
+  // تحديث عداد السلة حسب محتوى localStorage
+  function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const totalQty = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    document.getElementById("cartCountBadge").textContent = totalQty;
+  }
+
+  // الذهاب لصفحة السلة عند الضغط
+  function goToCart() {
+    window.location.href = "cart.html"; // يبقى اسم صفحة الكارت كما هو
+  }
+
+  // تحديث العداد عند تحميل الصفحة
+  window.addEventListener("load", updateCartCount);
+
+  // تحديث العداد تلقائيًا بعد أي تغيير في السلة
+  window.addEventListener("storage", updateCartCount);
+</script>
+
+</body>
+</html>
