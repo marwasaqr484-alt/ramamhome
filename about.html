@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>RAMAM HOME</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+ <!-- خطوط Google - خط Cairo -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="assets/vendor/drift-zoom/drift-basic.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+<link href="assets/css/products.css" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: LuxuryHotel
+  * Template URL: https://bootstrapmade.com/luxury-hotel-bootstrap-template/
+  * Updated: Jun 30 2025 with Bootstrap v5.3.7
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+  <style>
+    body {
+  font-family: "Cairo", sans-serif;
+
+}
+body {
+  font-family: 'Cairo', sans-serif;
+  font-weight: 400;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+}
+
+/* تصميم أيقونة السلة الثابتة أسفل اليسار */
+.cart-icon {
+  position: fixed;
+  bottom: 60px;
+  left: 20px;
+  background-color: #cdbc87; /* بيج */
+  color: #2d3a2f;             /* زيتي */
+  border-radius: 50%;
+  padding: 12px 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  transition: 0.3s ease-in-out;
+  text-decoration: none;
+}
+
+.cart-icon:hover {
+  transform: scale(1.1);
+}
+
+#cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #2d3a2f; /* زيتي */
+  color: #fff;
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  border-radius: 50%;
+  text-align: center;
+}
+
+  </style>
+</head>
+<style>
+  body.about-page main {
+  padding-bottom: 40px; /* عشان يبعد عن الشريط */
+}
+
+</style>
+
+<body class="about-page">
+
+	<div class="top-ticker">
+  <div class="ticker-track">
+    <div class="ticker-item"> ❖ 40% OFF on Porcelain Set</div>
+    <div class="ticker-item"> ❖ Free Shipping on Orders Above EGP 5,000</div>
+    <div class="ticker-item"> ❖ Free Gift When You Subscribe Today</div>
+    <div class="ticker-item"> ❖ 100% Authentic Products with Warranty</div>
+    <div class="ticker-item"> ❖ Shipping Within 24 Hours</div>
+
+    <!-- Duplicate for continuous loop effect -->
+    <div class="ticker-item"> ❖ 40% OFF on Porcelain Set</div>
+    <div class="ticker-item"> ❖ Free Shipping on Orders Above EGP 5,000</div>
+    <div class="ticker-item"> ❖ Free Gift When You Subscribe Today</div>
+    <div class="ticker-item"> ❖ 100% Authentic Products with Warranty</div>
+    <div class="ticker-item"> ❖ Shipping Within 24 Hours</div>
+  </div>
+</div>
+
+
+	<header id="header" class="header d-flex align-items-center fixed-top" style="margin-top: 40px;">
+		
+		<div class="container position-relative d-flex align-items-center justify-content-between">
+			<a href="index.html" class="logo d-flex align-items-center me-auto me-xl-0">
+				<!-- Uncomment the line below if you also wish to use an image logo -->
+				<!-- <img src="assets/img/logo.webp" alt=""> -->
+				      <img src="assets/img/logo.png" alt="RAMAM Logo" style="height: 40px; margin-left: 10px;" />
+
+				<h1 class="sitename">RAMAM HOME</h1> </a>
+				
+			<nav id="navmenu" class="navmenu">
+
+
+				<ul>
+					<li><a href="index.html" class="active">HOME</a></li>
+					<li><a href="about.html">ABOUT</a></li>
+					<li><a href="shop.html">SHOP</a></li>
+					<li><a href="location.html">LOCATION</a></li>
+					<li><a href="contact.html">CONTACT</a></li>
+<div class="d-flex align-items-center gap-3 header-controls">
+  
+  <a href="login.html" class="btn-profile">
+    <i class="bi bi-person-circle"></i>
+  </a>
+  <a href="#" class="btn-search-toggle">
+    <i class="bi bi-search"></i>
+  </a>
+  <a class="btn-getstarted" href="login.html">Join Now</a>
+</div>
+
+	</header>
+	<main class="main">
+		<!-- Hotel Hero Section -->
+		<section id="about-us" style="background:#cdbc87; padding:60px 0;">
+  <div class="container">
+    <div class="section-title text-center" data-aos="fade-down">
+      <h2 style="color:#2d3a2f;">About Us</h2>
+    </div>
+    <div class="row align-items-center my-5">
+      <div class="col-md-6 d-flex justify-content-center" data-aos="zoom-in-up">
+  <div class="about-img-wrapper">
+    <img src="assets/img/about1.jpg" alt="Ramam Home" class="img-fluid about-image" />
+  </div>
+</div>
+
+      <div class="col-md-6" data-aos="fade-left">
+        <div class="content-box" style="background: rgba(100,115,47,0.8); padding: 30px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15);">
+          <p style="color:#faf8f8; font-size:18px; line-height:1.6;">
+            At <strong>Ramam Home</strong>, we’re not just a homeware brand — we’re your partner in every detail. With over <strong>20 years of experience</strong> in the market, we truly understand Egyptian families’ needs.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="after-sales" style="background:#cdbc87; padding:60px 0;">
+  <div class="container">
+    <div class="section-title text-center" data-aos="fade-down">
+         </div>
+ <div class="row align-items-center">
+  <!-- النص على الشمال -->
+  <div class="col-md-6 order-md-1" data-aos="fade-right">
+    <div class="content-box" style="background: rgba(100,115,47,0.8); padding: 30px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15);">
+        <p style="font-size: 18px; color: #333;">
+            We’re proud to be the <strong>first online brand</strong> to walk with you step-by-step in selecting your appliances — from the very first item to completing your entire home. 
+          </p>
+          <p style="font-size: 18px; color: #333;">
+            We don’t just sell — we guide you, advise you on what best fits your usage, your space, and your personal style. Because every detail in your home matters 
+          </p>
+    </div>
+  </div>
+
+  <!-- الصورة على اليمين -->
+  <div class="col-md-6 order-md-2 d-flex justify-content-center" data-aos="zoom-in-up" data-aos-delay="100">
+    <div class="about-img-wrapper">
+      <img src="assets/img/service.jpg" alt="After Sales" class="img-fluid about-image" />
+    </div>
+  </div>
+</div>
+
+      
+      
+    </div>
+  </div>
+</section>
+  </main>
+  <footer id="footer" class="footer position-relative dark-background" style="  background-color: rgba(255, 255, 255, 0.1); ">
+		<div class="footer-top">
+			<div class="container">
+				<div class="row gy-4">
+					<div class="col-lg-4 col-md-6 footer-about">
+						<a href="index.html" class="logo d-flex align-items-center"> <span class="sitename">RAMAM HOME</span> </a>
+						<div class="footer-contact pt-3">
+							<p>Mit El-Khouly Village</p>
+							<p>Egypt, Damietta</p>
+							<p class="mt-3"><strong>Phone:</strong> <span>+201030272927</span></p>
+							<p><strong>Email:</strong> <span>ramamhome9@gmail.com</span></p>
+						</div>
+					</div>
+					<div class="col-lg-2 col-md-3 footer-links">
+						<h4>Useful Links</h4>
+						<ul>
+							<li><a href="index.html">HOME</a></li>
+							<li><a href="about.html">ABOUT US</a></li>
+							<li><a href="shop.html">SHOP</a></li>
+							<li><a href="location.html">LOCATION</a></li>
+							<li><a href="contact.html">CONTACT</a></li>
+						</ul>
+					</div>
+					<div class="copyright text-center">
+						<div class="container d-flex flex-column flex-lg-row justify-content-center justify-content-lg-between align-items-center">
+							<div class="d-flex flex-column align-items-center align-items-lg-start">
+								<div> </div>
+								<div class="credits">
+									<!-- All the links in the footer should remain intact. -->
+									<!-- You can delete the links only if you purchased the pro version. -->
+									<!-- Licensing information: https://bootstrapmade.com/license/ -->
+									<!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/herobiz-bootstrap-business-template/ -->Designed by <a href="">Marwa saqr</a> </div>
+							</div>
+							<div class="social-links order-first order-lg-last mb-3 mb-lg-0">   <a href="http://wa.me/201030272927" target="_blank"><i class="bi bi-whatsapp"></i></a><a href="https://www.facebook.com/share/1HVg6aNMix/?mibextid=wwXIfr"><i class="bi bi-facebook"></i></a> <a href="https://www.instagram.com/ramam_home?igsh=aTdwN3lwODVkaWJr&utm_source=qr"><i class="bi bi-instagram"></i></a> </div>
+						</div>
+					</div>
+	</footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="assets/vendor/drift-zoom/Drift.min.js"></script>
+  <script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+
+  <!-- Main JS File -->
+  <script src="assets/js/main.js"></script>
+<nav class="bottom-nav d-lg-none">
+  <a href="index.html" class="nav-item">
+    <i class="bi bi-house-door"></i>
+    <span>Home</span>
+  </a>
+  <a href="about.html" class="nav-item">
+    <i class="bi bi-info-circle"></i>
+    <span>About</span>
+  </a>
+  <a href="shop.html" class="nav-item">
+    <i class="bi bi-bag"></i>
+    <span>Shop</span>
+  </a>
+  <a href="location.html" class="nav-item">
+    <i class="bi bi-geo-alt"></i>
+    <span>Location</span>
+  </a>
+  <a href="contact.html" class="nav-item">
+    <i class="bi bi-envelope"></i>
+    <span>Contact</span>
+  </a>
+  <a href="login.html" class="nav-item">
+    <i class="bi bi-person-circle"></i>
+    <span>Profile</span>
+  </a>
+  <a href="#" class="nav-item" id="mobile-search-btn">
+    <i class="bi bi-search"></i>
+    <span>Search</span>
+  </a>
+
+
+</nav>
+<!-- Search Overlay -->
+<div id="search-overlay" class="search-overlay">
+  <input type="text" id="search-input" placeholder="Search..." />
+  <span id="close-search">&times;</span>
+</div>
+<style>
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(45, 58, 47, 0.95);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 9999;
+}
+
+.search-overlay input {
+  width: 80%;
+  max-width: 500px;
+  padding: 15px 25px;
+  font-size: 18px;
+  border-radius: 50px;
+  border: none;
+  background: #fff;
+  color: #333;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+#close-search {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 36px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+#close-search:hover {
+  transform: scale(1.2);
+}
+
+/* تصميم أيقونة السلة الثابتة أسفل اليسار */
+.cart-icon {
+  position: fixed;
+  bottom: 60px;
+  left: 20px;
+  background-color: #cdbc87; /* بيج */
+  color: #2d3a2f;             /* زيتي */
+  border-radius: 50%;
+  padding: 12px 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  transition: 0.3s ease-in-out;
+  text-decoration: none;
+}
+
+.cart-icon:hover {
+  transform: scale(1.1);
+}
+
+#cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #2d3a2f; /* زيتي */
+  color: #fff;
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  border-radius: 50%;
+  text-align: center;
+}
+</style>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchOverlay = document.getElementById('search-overlay');
+    const searchInput = document.getElementById('search-input');
+    const mobileSearchBtn = document.getElementById('mobile-search-btn');
+    const closeSearch = document.getElementById('close-search');
+
+    mobileSearchBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      searchOverlay.style.display = 'flex';
+      searchInput.focus();
+    });
+
+    closeSearch.addEventListener('click', function () {
+      searchOverlay.style.display = 'none';
+      searchInput.value = '';
+    });
+
+    // ESC key closes overlay
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        searchOverlay.style.display = 'none';
+        searchInput.value = '';
+      }
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchOverlay = document.getElementById('search-overlay');
+    const searchInput = document.getElementById('search-input');
+    const mobileSearchBtn = document.getElementById('mobile-search-btn');
+
+    mobileSearchBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      searchOverlay.style.display = 'flex';
+      searchInput.focus();
+    });
+  });
+</script>
+<!-- أيقونة السلة أسفل يسار الشاشة -->
+
+<!-- أيقونة السلة أسفل يسار الشاشة -->
+<div class="floating-cart" onclick="goToCart()">
+  🛒
+  <span id="cartCountBadge" class="cart-badge">0</span>
+</div>
+
+
+<style>
+  .floating-cart {
+    position: fixed;
+    bottom: 65px;
+    left: 20px;
+    background-color: #6c8126; /* زيتي */
+    color: #fff;
+    border-radius: 50%;
+    padding: 6px 8px;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+  }
+
+  .floating-cart:hover {
+    transform: scale(1.1);
+  }
+
+  .cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #cdbc87; /* بيج */
+    color: #6c8126;      /* زيتي */
+    font-size: 14px;
+    width: 19px;
+    height: 19px;
+    line-height: 22px;
+    border-radius: 50%;
+    text-align: center;
+    font-weight: bold;
+  }
+</style>
+
+<script>
+  // تحديث عداد السلة حسب محتوى localStorage
+  function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const totalQty = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    document.getElementById("cartCountBadge").textContent = totalQty;
+  }
+
+  // الذهاب لصفحة السلة عند الضغط
+  function goToCart() {
+    window.location.href = "cart.html"; // يبقى اسم صفحة الكارت كما هو
+  }
+
+  // تحديث العداد عند تحميل الصفحة
+  window.addEventListener("load", updateCartCount);
+
+  // تحديث العداد تلقائيًا بعد أي تغيير في السلة
+  window.addEventListener("storage", updateCartCount);
+</script>
+
+</body>
+
+</html>

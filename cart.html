@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<title>RAMAM HOME</title>
+<style>
+  ul { list-style: none; padding: 0; }
+  li { display: flex; align-items: center; margin-bottom: 10px; }
+  img { margin-left: 10px; }
+  button { margin-right: 10px; }
+</style>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+
+ const firebaseConfig = {
+  apiKey: "AIzaSyCH6ZZxYn3iEDuX_U2R_9oPRMNrahZY0RQ",
+  authDomain: "ramamhome1.firebaseapp.com",
+  projectId: "ramamhome1",
+  storageBucket: "ramamhome1.firebasestorage.app",
+  messagingSenderId: "569655228341",
+  appId: "1:569655228341:web:8b9946180ce32b52e88bfc"
+};
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  let currentUser = null;
+  let currentCartItems = [];
+  let currentTotalPrice = 0;
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      document.getElementById("userStatus").textContent = `Welcome, ${user.displayName || user.email}`;
+      enableSendButton(true);
+    } else {
+      currentUser = null;
+      document.getElementById("userStatus").textContent = "You must log in to send the invoice";
+      enableSendButton(false);
+    }
+  });
+
+  function enableSendButton(enable) {
+    document.getElementById("sendInvoiceBtn").disabled = !enable;
+  }
+
+  function loadCart() {
+  const cartList = document.getElementById("cart");
+  cartList.innerHTML = "";
+
+  currentCartItems = [];
+  currentTotalPrice = 0;
+
+  let localCart = JSON.parse(localStorage.getItem("cart")) || [];
+  localCart = [...localCart]; // نسخة آمنة
+
+  localCart.forEach((item, index) => {
+    const li = document.createElement("li");
+
+    const img = document.createElement("img");
+    img.src = item.image || "https://via.placeholder.com/100";
+    img.width = 190;
+    img.height = 190;
+
+    const text = document.createElement("span");
+text.innerHTML = `${item.name} <br>  ${item.price} EGP <br> Quantity : `;
+text.style.flex = "1";
+text.style.display = "flex";
+text.style.flexDirection = "column"; // عشان يترتبوا تحت بعض
+text.style.alignItems = "flex-start";
+text.style.gap = "8px";
+text.style.color = "white";
+
+
+
+    // زر ناقص
+    const minusBtn = document.createElement("button");
+    minusBtn.textContent = "−";
+    minusBtn.style.width = "28px";
+    minusBtn.style.height = "28px";
+    minusBtn.style.fontSize = "35px";
+    minusBtn.style.cursor = "pointer";
+    minusBtn.onclick = () => {
+      let qty = localCart[index].quantity || 1;
+      if (qty > 1) {
+        localCart[index].quantity = qty - 1;
+        localStorage.setItem("cart", JSON.stringify(localCart));
+        loadCart();
+      }
+    };
+
+    // عرض الكمية كنص فقط
+    const qtyDisplay = document.createElement("span");
+    qtyDisplay.textContent = item.quantity || 1;
+    qtyDisplay.style.minWidth = "24px";
+    qtyDisplay.style.textAlign = "center";
+    qtyDisplay.style.fontSize = "2rem";
+    qtyDisplay.style.color = "white";
+
+    // زر زائد
+    const plusBtn = document.createElement("button");
+    plusBtn.textContent = "+";
+    plusBtn.style.width = "28px";
+    plusBtn.style.height = "28px";
+    plusBtn.style.fontSize = "35px";
+    plusBtn.style.cursor = "pointer";
+    plusBtn.onclick = () => {
+      let qty = localCart[index].quantity || 1;
+      localCart[index].quantity = qty + 1;
+      localStorage.setItem("cart", JSON.stringify(localCart));
+      loadCart();
+    };
+
+    // أضف الأزرار والعرض للنص
+    text.appendChild(minusBtn);
+    text.appendChild(qtyDisplay);
+    text.appendChild(plusBtn);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delet";
+    deleteBtn.style.marginRight = "10px";
+    deleteBtn.onclick = () => {
+      localCart.splice(index, 1);
+      localStorage.setItem("cart", JSON.stringify(localCart));
+      loadCart();
+    };
+
+    li.appendChild(img);
+    li.appendChild(text);
+    li.appendChild(deleteBtn);
+
+    cartList.appendChild(li);
+
+    currentCartItems.push(item);
+    currentTotalPrice += Number(item.price) * (item.quantity || 1);
+  });
+
+  document.getElementById("totalPrice").textContent = currentTotalPrice.toFixed(2) + " EGP";
+}
+
+    async function sendInvoice() {
+    if (!currentUser) {
+      alert("You must log in first to send the invoice..");
+      return;
+    }
+
+    if (currentCartItems.length === 0) {
+      alert("The cart is empty, the invoice cannot be sent..");
+      return;
+    }
+
+    const delivery = document.getElementById("deliveryOption").value; // إضافة هنا
+
+    const invoiceNumber = "INV-" + Date.now();
+
+    try {
+  await addDoc(collection(db, "invoices"), {
+    invoiceNumber: invoiceNumber,
+    items: currentCartItems,
+    totalPrice: currentTotalPrice,
+    deliveryOption: delivery,
+    userId: currentUser.uid,
+    userName: currentUser.displayName || prompt("Enter your name") || "",
+    userPhone: prompt("Enter your phone number") || "",
+    userEmail: currentUser.email || "",
+    userAddress: prompt("Enter your address") || "",
+    timestamp: serverTimestamp()
+});
+
+
+      alert(` Invoice sent successfully! Invoice number : ${invoiceNumber}`);
+
+      localStorage.removeItem("cart");
+      loadCart();
+    } catch (error) {
+      alert("An error occurred while sending the invoice: " + error.message);
+    }
+  }
+
+
+  window.onload = () => {
+    loadCart();
+    document.getElementById("sendInvoiceBtn").onclick = sendInvoice;
+   document.getElementById("goToInvoicesBtn").onclick = () => {
+  window.location.href = "invoice_owner.html"; // غيّر هنا لاسم صفحة المالك
+
+    };
+  };
+</script>
+<style>
+  /* أساسي */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #cdbc87;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 4.5rem;
+  color: #6c8126;
+}
+
+#userStatus {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #6c8126;
+}
+
+ul { 
+  list-style: none; 
+  padding: 0; 
+}
+
+li { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+  margin-bottom: 25px; 
+  background: #6c812644;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+li:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+img { 
+  margin-left: 20px; 
+  border-radius: 15px;
+  object-fit: cover;
+  width: 130px;
+  height: 130px;
+}
+
+span {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.8rem;
+  flex-wrap: wrap;
+}
+
+/* أزرار زائد وناقص */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 20%; /* دائرة كاملة */
+  background-color: #6c8126;
+  color: #fff;
+  font-size: 2rem;
+  width: 108px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.25s, transform 0.25s;
+}
+
+button:hover:not(:disabled) {
+  background-color: #556620;
+  transform: scale(1.1);
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* عرض الكمية */
+span > span {
+  min-width: 55px;
+  width: 90px;
+  text-align: center;
+  font-size: 6.6rem;
+}
+
+/* الإجمالي وخيار التوصيل */
+#totalPrice, #deliveryOption {
+  font-size: 2.2rem;
+  margin-top: 20px;
+}
+
+#deliveryOption {
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid #ccc;
+}
+
+#sendInvoiceBtn {
+  display: block;
+  width: 100%;
+  margin-top: 35px;
+  padding: 20px 0;
+  font-size: 2.2rem;
+  border-radius: 16px;
+}
+
+a {
+  display: block;
+  margin-top: 40px;
+  text-align: center;
+  font-size: 1.9rem;
+  color: #6c8126;
+  text-decoration: none;
+  transition: color 0.25s;
+}
+
+a:hover {
+  color: #556620;
+}
+
+/* استجابة الهواتف الصغيرة */
+@media screen and (max-width: 480px) {
+  li {
+    flex-direction: column;
+    align-items: center;
+    padding: 25px;
+  }
+
+  img {
+    width: 160px;
+    height: 160px;
+    margin-bottom: 15px;
+  }
+
+  span {
+    flex-direction: row;
+    justify-content: center;
+    font-size: 2.1rem;
+    gap: 16px;
+  }
+
+  button {
+    width: 55px;
+    height: 55px;
+    font-size: 2.2rem;
+  }
+
+  span > span {
+    min-width: 32px;
+    font-size: 2rem;
+  }
+
+  #sendInvoiceBtn {
+    font-size: 2.5rem;
+    padding: 28px 0;
+  }
+
+  #totalPrice, #deliveryOption {
+    font-size: 2.5rem;
+  }
+
+  a {
+    font-size: 2rem;
+    margin-top: 45px;
+  }
+}
+/* التحكم في خيارات الـ option */
+#deliveryOption option {
+  font-size: 2.2rem;       /* حجم الخط داخل الخيارات */
+  padding: 10px;           /* المسافة داخل كل خيار */
+  background-color: #55662056;  /* خلفية الخيار */
+  color: #fbfbfb;             /* لون النص */
+}
+</style>
+</head>
+<body>
+<h1> Cart</h1>
+<p id="userStatus" style="color: #343e10;"></p>
+<ul id="cart"></ul>
+<div style="margin-top:20px; font-size:28px;">
+  <strong> Total : </strong><span id="totalPrice">0 EGP</span>
+</div>
+<!-- خيار التوصيل / Delivery Option -->
+<div style="margin-top:20px; font-size:28px;">
+  <label><strong> Do you want delivery? </strong></label>
+  <select id="deliveryOption" style="padding:14px 18px; font-size:28px; background-color: #55662056;">
+    <option value="No" style=" font-size:18px;">No</option>
+    <option value="Yes" style=" font-size:18px;">Yes</option>
+  </select>
+</div>
+
+<button id="sendInvoiceBtn" style="margin-top:20px; padding:10px 20px; font-size:36px;" disabled>
+   Send Invoice to Owner
+</button>
+
+<a href="shop.html" style="display:block; margin-top:30px;">Back to Products</a>
+
+</body>
+</html>
